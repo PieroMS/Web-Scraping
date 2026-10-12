@@ -153,7 +153,7 @@ Si PowerShell bloquea la ejecución del script, se puede permitir temporalmente 
 
     Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 
-### 6.5. Instalar las dependencias
+### 6.5. Instalar las dependencias (dentro del entorno virtual)
 
 Con el entorno virtual activado:
 
@@ -181,7 +181,7 @@ Estos son los pasos que debe seguir otra persona para utilizar el proyecto desde
 
     py -m venv .venv
 
-### 7.3. Activar el entorno virtual
+### 7.3. Activar el entorno virtual (aca estan instaladas todas las dependencias)
 
     .\.venv\Scripts\Activate.ps1
 
