@@ -40,6 +40,7 @@ Los resultados se devuelven en formato JSON y se muestran en el dashboard. No ut
 
 ```text
 WebScraping/
+├── .venv/
 ├── backend/
 │   └── main.py
 ├── frontend/
@@ -47,7 +48,6 @@ WebScraping/
 │   ├── styles.css
 │   └── app.js
 ├── requirements.txt
-├── .gitignore
 └── README.md
 ```
 
@@ -165,6 +165,10 @@ Con el entorno virtual activado:
     py -m pip install beautifulsoup4
     py -m pip install fastapi
 
+Para usar el proyecto se tiene que tener corriendo 
+
+    py -m uvicorn main:app --app-dir backend
+
 ## 7. Cómo clonar y configurar el proyecto desde cero
 
 Estos son los pasos que debe seguir otra persona para utilizar el proyecto desde un repositorio Git.
@@ -181,11 +185,7 @@ Estos son los pasos que debe seguir otra persona para utilizar el proyecto desde
 
     .\.venv\Scripts\Activate.ps1
 
-### 7.4. Instalar las dependencias
-
-    los py
-
-### 7.5. Iniciar el backend
+### 7.4. Iniciar el backend
 
 Desde la raíz del proyecto, arrancar el servidor:
 
