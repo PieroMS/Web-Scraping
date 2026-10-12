@@ -165,7 +165,7 @@ Con el entorno virtual activado:
     py -m pip install beautifulsoup4
     py -m pip install fastapi
 
-Para usar el proyecto se tiene que tener corriendo 
+Para usar el proyecto se tiene que tener corriendo (con el entorno virtual activado)
 
     py -m uvicorn main:app --app-dir backend
 
