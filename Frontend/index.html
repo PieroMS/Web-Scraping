@@ -1,0 +1,404 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0b1020">
+    <title>WebScraping — Website Analyzer</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="app.js" defer></script>
+</head>
+<body>
+    <div class="app-shell">
+        <aside class="sidebar">
+            <a href="#" class="brand" aria-label="WebScraping inicio">
+                <span class="brand-mark">W</span>
+                <span>Web<span class="brand-light">Scraping</span></span>
+            </a>
+
+            <div class="sidebar-label">WORKSPACE</div>
+
+            <nav class="navigation" aria-label="Navegación principal">
+                <a class="nav-item active" href="#overview">
+                    <span class="nav-icon">◫</span>
+                    Overview
+                </a>
+                <a class="nav-item" href="#design">
+                    <span class="nav-icon">◈</span>
+                    Diseño visual
+                </a>
+                <a class="nav-item" href="#structure">
+                    <span class="nav-icon">⌘</span>
+                    Estructura
+                </a>
+                <a class="nav-item" href="#seo">
+                    <span class="nav-icon">◎</span>
+                    SEO
+                </a>
+                <a class="nav-item" href="#responsive">
+                    <span class="nav-icon">▣</span>
+                    Responsive
+                </a>
+            </nav>
+
+            <div class="sidebar-bottom">
+                <div class="api-indicator">
+                    <span class="status-dot" id="apiDot"></span>
+                    <div>
+                        <strong id="apiStatus">Comprobando API</strong>
+                        <small>Backend local</small>
+                    </div>
+                </div>
+                <div class="api-url">127.0.0.1:8000</div>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="topbar">
+                <div>
+                    <div class="eyebrow">WEBSITE INTELLIGENCE</div>
+                    <h1>Website Analyzer</h1>
+                    <p class="page-subtitle">
+                        Descubre cómo está construida una página web.
+                    </p>
+                </div>
+
+                <div class="topbar-actions">
+                    <span class="live-badge">
+                        <span class="status-dot"></span>
+                        Local workspace
+                    </span>
+                    <button id="downloadJson" class="button button-secondary"
+                            disabled>
+                        <span aria-hidden="true">↓</span>
+                        Exportar JSON
+                    </button>
+                </div>
+            </header>
+
+            <section class="analyzer-panel" aria-labelledby="analyzerTitle">
+                <div class="analyzer-copy">
+                    <div class="analyzer-icon">↗</div>
+                    <div>
+                        <h2 id="analyzerTitle">Analiza cualquier sitio web</h2>
+                        <p>Introduce la URL pública que deseas inspeccionar.</p>
+                    </div>
+                </div>
+
+                <form id="analyzeForm" class="url-form">
+                    <label class="url-input-wrapper" for="urlInput">
+                        <span class="url-prefix">↗</span>
+                        <input
+                            id="urlInput"
+                            name="url"
+                            type="url"
+                            placeholder="https://example.com"
+                            autocomplete="url"
+                            required
+                        >
+                    </label>
+                    <button id="analyzeButton" class="button button-primary"
+                            type="submit">
+                        <span id="buttonIcon" aria-hidden="true">⌕</span>
+                        <span id="buttonText">Analizar sitio</span>
+                    </button>
+                </form>
+
+                <div class="analyzer-footer">
+                    <span>✓ Análisis visual</span>
+                    <span>✓ Inspección SEO</span>
+                    <span>✓ Pruebas responsive</span>
+                    <span class="privacy-note">Sin guardar resultados</span>
+                </div>
+            </section>
+
+            <div id="alertBox" class="alert hidden" role="alert"></div>
+
+            <section id="emptyState" class="empty-state">
+                <div class="empty-illustration">
+                    <div class="illustration-window">
+                        <div class="illustration-dots">
+                            <i></i><i></i><i></i>
+                        </div>
+                        <div class="illustration-line line-long"></div>
+                        <div class="illustration-line line-short"></div>
+                        <div class="illustration-blocks">
+                            <i></i><i></i><i></i>
+                        </div>
+                    </div>
+                    <span class="orbit orbit-one"></span>
+                    <span class="orbit orbit-two"></span>
+                </div>
+                <h2>Tu próximo análisis empieza aquí</h2>
+                <p>
+                    Analiza una web para descubrir sus colores, tipografías,
+                    estructura HTML, metadatos y comportamiento responsive.
+                </p>
+                <button id="exampleButton" class="button button-secondary">
+                    Probar con example.com <span aria-hidden="true">→</span>
+                </button>
+            </section>
+
+            <div id="results" class="results hidden">
+                <section id="overview" class="section-block">
+                    <div class="section-heading">
+                        <div>
+                            <div class="eyebrow">OVERVIEW</div>
+                            <h2>Resumen del análisis</h2>
+                            <p id="analyzedUrl" class="muted url-result"></p>
+                        </div>
+                        <span id="httpBadge" class="http-badge">HTTP —</span>
+                    </div>
+
+                    <div class="stats-grid">
+                        <article class="stat-card">
+                            <div class="stat-top">
+                                <span class="stat-label">Elementos visibles</span>
+                                <span class="stat-icon purple">◫</span>
+                            </div>
+                            <strong id="statElements" class="stat-value">—</strong>
+                            <span class="stat-caption">Elementos del DOM</span>
+                        </article>
+
+                        <article class="stat-card">
+                            <div class="stat-top">
+                                <span class="stat-label">Imágenes</span>
+                                <span class="stat-icon blue">▧</span>
+                            </div>
+                            <strong id="statImages" class="stat-value">—</strong>
+                            <span class="stat-caption">Imágenes visibles</span>
+                        </article>
+
+                        <article class="stat-card">
+                            <div class="stat-top">
+                                <span class="stat-label">Botones</span>
+                                <span class="stat-icon orange">▰</span>
+                            </div>
+                            <strong id="statButtons" class="stat-value">—</strong>
+                            <span class="stat-caption">Controles detectados</span>
+                        </article>
+
+                        <article class="stat-card">
+                            <div class="stat-top">
+                                <span class="stat-label">Enlaces</span>
+                                <span class="stat-icon green">↗</span>
+                            </div>
+                            <strong id="statLinks" class="stat-value">—</strong>
+                            <span class="stat-caption">Enlaces visibles</span>
+                        </article>
+                    </div>
+
+                    <article class="panel page-info-panel">
+                        <div class="panel-heading">
+                            <div>
+                                <h3>Información de la página</h3>
+                                <p>Datos generales del documento analizado.</p>
+                            </div>
+                            <span class="panel-icon">⌘</span>
+                        </div>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <span>Título</span>
+                                <strong id="pageTitle">—</strong>
+                            </div>
+                            <div class="info-item">
+                                <span>Idioma</span>
+                                <strong id="pageLanguage">—</strong>
+                            </div>
+                            <div class="info-item">
+                                <span>URL final</span>
+                                <strong id="finalUrl" class="break-word">—</strong>
+                            </div>
+                            <div class="info-item">
+                                <span>Fecha del análisis</span>
+                                <strong id="analysisDate">—</strong>
+                            </div>
+                        </div>
+                    </article>
+                </section>
+
+                <section id="design" class="section-block">
+                    <div class="section-heading">
+                        <div>
+                            <div class="eyebrow">VISUAL IDENTITY</div>
+                            <h2>Diseño visual</h2>
+                            <p>Colores, tipografías y estilos detectados.</p>
+                        </div>
+                    </div>
+
+                    <article class="panel">
+                        <div class="panel-heading">
+                            <div>
+                                <h3>Paleta de colores</h3>
+                                <p>Colores computados en los elementos visibles.</p>
+                            </div>
+                            <span id="colorCount" class="count-badge">0 colores</span>
+                        </div>
+                        <div id="colorPalette" class="color-palette">
+                            <p class="muted">Los colores aparecerán aquí.</p>
+                        </div>
+                    </article>
+
+                    <div class="two-column-grid">
+                        <article class="panel">
+                            <div class="panel-heading">
+                                <div>
+                                    <h3>Familias tipográficas</h3>
+                                    <p>Fuentes detectadas en el documento.</p>
+                                </div>
+                            </div>
+                            <div id="fontList" class="font-list"></div>
+                        </article>
+
+                        <article class="panel">
+                            <div class="panel-heading">
+                                <div>
+                                    <h3>Tamaños de texto</h3>
+                                    <p>Distribución de tamaños CSS.</p>
+                                </div>
+                            </div>
+                            <div id="fontSizeList" class="bar-list"></div>
+                        </article>
+                    </div>
+
+                    <article class="panel">
+                        <div class="panel-heading">
+                            <div>
+                                <h3>Botones y controles</h3>
+                                <p>Estilos calculados de los componentes detectados.</p>
+                            </div>
+                            <span id="buttonCount" class="count-badge">0 botones</span>
+                        </div>
+                        <div id="componentList" class="component-grid"></div>
+                    </article>
+
+                    <article class="panel">
+                        <div class="panel-heading">
+                            <div>
+                                <h3>Variables CSS</h3>
+                                <p>Variables personalizadas accesibles.</p>
+                            </div>
+                        </div>
+                        <div id="cssVariables" class="code-list"></div>
+                    </article>
+                </section>
+
+                <section id="structure" class="section-block">
+                    <div class="section-heading">
+                        <div>
+                            <div class="eyebrow">DOCUMENT STRUCTURE</div>
+                            <h2>Estructura de la página</h2>
+                            <p>Encabezados, recursos y tecnologías indicativas.</p>
+                        </div>
+                    </div>
+
+                    <div class="two-column-grid">
+                        <article class="panel">
+                            <div class="panel-heading">
+                                <div>
+                                    <h3>Jerarquía de encabezados</h3>
+                                    <p>Encabezados HTML encontrados.</p>
+                                </div>
+                            </div>
+                            <div id="headingList" class="heading-list"></div>
+                        </article>
+
+                        <article class="panel">
+                            <div class="panel-heading">
+                                <div>
+                                    <h3>Elementos HTML</h3>
+                                    <p>Conteo de componentes detectados.</p>
+                                </div>
+                            </div>
+                            <div id="elementList" class="element-list"></div>
+                        </article>
+                    </div>
+
+                    <article class="panel">
+                        <div class="panel-heading">
+                            <div>
+                                <h3>Frameworks indicativos</h3>
+                                <p>Señales encontradas en el DOM.</p>
+                            </div>
+                        </div>
+                        <div id="frameworkList" class="tag-list"></div>
+                    </article>
+
+                    <article class="panel">
+                        <div class="panel-heading">
+                            <div>
+                                <h3>Imágenes sin texto alternativo</h3>
+                                <p>Imágenes sin atributo alt o con alt vacío.</p>
+                            </div>
+                            <span id="altCount" class="count-badge">0 imágenes</span>
+                        </div>
+                        <div id="altImageList" class="simple-list"></div>
+                    </article>
+                </section>
+
+                <section id="seo" class="section-block">
+                    <div class="section-heading">
+                        <div>
+                            <div class="eyebrow">SEARCH OPTIMIZATION</div>
+                            <h2>SEO y metadatos</h2>
+                            <p>Información básica para motores de búsqueda y redes sociales.</p>
+                        </div>
+                    </div>
+
+                    <article class="panel">
+                        <div id="seoList" class="seo-list"></div>
+                    </article>
+
+                    <article class="panel">
+                        <div class="panel-heading">
+                            <div>
+                                <h3>Open Graph</h3>
+                                <p>Metadatos utilizados al compartir enlaces.</p>
+                            </div>
+                        </div>
+                        <div id="openGraphList" class="seo-list"></div>
+                    </article>
+                </section>
+
+                <section id="responsive" class="section-block">
+                    <div class="section-heading">
+                        <div>
+                            <div class="eyebrow">RESPONSIVE CHECK</div>
+                            <h2>Diseño adaptable</h2>
+                            <p>Comprobaciones básicas en diferentes anchos de pantalla.</p>
+                        </div>
+                    </div>
+
+                    <div id="responsiveGrid" class="responsive-grid"></div>
+
+                    <article class="panel">
+                        <div class="panel-heading">
+                            <div>
+                                <h3>Media queries</h3>
+                                <p>Reglas de medios accesibles en las hojas de estilo.</p>
+                            </div>
+                        </div>
+                        <div id="mediaQueryList" class="tag-list"></div>
+                    </article>
+                </section>
+
+                <section class="section-block">
+                    <article class="panel notes-panel">
+                        <div class="panel-icon">ⓘ</div>
+                        <div>
+                            <h3>Notas del análisis</h3>
+                            <ul id="analysisNotes"></ul>
+                        </div>
+                    </article>
+                </section>
+            </div>
+
+            <footer class="footer">
+                <span>WebScraping <span id="footerYear"></span></span>
+                <span>Hecho para inspeccionar la web, no para almacenar sus datos.</span>
+            </footer>
+        </main>
+    </div>
+</body>
+</html>
