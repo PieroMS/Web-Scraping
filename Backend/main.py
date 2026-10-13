@@ -169,7 +169,8 @@ async def inspect_page(page) -> dict:
                     normalizeColor(css(el, "color")),
                     normalizeColor(css(el, "background-color")),
                     normalizeColor(css(el, "border-top-color"))
-                ])
+                ]),
+                Infinity
             );
 
             const backgrounds = frequency(
@@ -205,28 +206,10 @@ async def inspect_page(page) -> dict:
                 text: (el.innerText || "").trim().slice(0, 250)
             }));
 
-            // Botones y controles similares.
-            const buttons = [
-                ...document.querySelectorAll(
-                    'button, [role="button"], ' +
-                    'input[type="button"], input[type="submit"]'
-                )
-            ].filter(isVisible).slice(0, 60).map(el => ({
-                tag: el.tagName.toLowerCase(),
-                text: (
-                    el.innerText ||
-                    el.getAttribute("aria-label") ||
-                    el.value ||
-                    ""
-                ).trim().slice(0, 150),
-                background: css(el, "background-color"),
-                color: css(el, "color"),
-                borderRadius: css(el, "border-radius"),
-                fontSize: css(el, "font-size"),
-                fontFamily: css(el, "font-family"),
-                padding: css(el, "padding"),
-                border: css(el, "border")
-            }));
+            // Conserva el conteo general sin extraer estilos de controles.
+            const buttonCount = [...document.querySelectorAll(
+                'button, [role="button"], input[type="button"], input[type="submit"]'
+            )].filter(isVisible).length;
 
             const links = [
                 ...document.querySelectorAll("a")
@@ -344,14 +327,12 @@ async def inspect_page(page) -> dict:
                     ),
                 mediaQueries: [...mediaQueries].slice(0, 100),
 
-                buttons,
-
                 elements: {
                     totalVisible: elements.length,
                     links: links.length,
                     images: images.length,
                     imagesWithoutAlt: imagesWithoutAlt.length,
-                    buttons: buttons.length,
+                    buttons: buttonCount,
                     forms: document.forms.length,
                     inputs: document.querySelectorAll(
                         "input, textarea, select"
@@ -571,7 +552,6 @@ async def analyze(request: AnalyzeRequest):
                 "fontWeights": page_data["fontWeights"],
             },
             "cssVariables": page_data["cssVariables"],
-            "buttons": page_data["buttons"],
         },
 
         "structure": {

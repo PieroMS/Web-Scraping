@@ -273,7 +273,6 @@ function renderDashboard(data) {
     renderColors(design.colors);
     renderFonts(design.typography);
     renderFontSizes(design.typography);
-    renderComponents(design.buttons);
     renderCSSVariables(design.cssVariables);
 
     renderHeadings(structure.headings);
@@ -300,6 +299,8 @@ function renderColors(colors) {
     const palette = $("#colorPalette");
 
     setText("#colorCount", `${items.length} colores`);
+    $("#copyAllColors").disabled = !items.length;
+    $("#copyColorsStatus").textContent = "";
 
     if (!items.length) {
         palette.innerHTML = emptyMessage("No se detectaron colores.");
@@ -334,7 +335,7 @@ function renderColors(colors) {
             const color = button.dataset.color;
 
             try {
-                await navigator.clipboard.writeText(color);
+                await copyText(color);
                 button.title = "¡Color copiado!";
             } catch {
                 button.title = color;
@@ -342,6 +343,59 @@ function renderColors(colors) {
         });
     });
 }
+
+// Copia la lista completa, sin el límite de la paleta del backend anterior.
+async function copyText(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+        try {
+            await navigator.clipboard.writeText(text);
+            return;
+        } catch (_) { /* Se intenta la alternativa local. */ }
+    }
+    const field = document.createElement("textarea");
+    field.value = text;
+    field.style.cssText = "position:fixed;opacity:0;pointer-events:none";
+    document.body.appendChild(field);
+    const previous = document.activeElement;
+    try {
+        field.select();
+        if (!document.execCommand("copy")) throw new Error("No se pudo copiar");
+    } finally {
+        field.remove();
+        previous?.focus();
+    }
+}
+
+function colorsAsRGB(colors) {
+    // Canvas convierte también colores CSS modernos (lab, oklch, color) a sRGB.
+    const canvas = document.createElement("canvas");
+    canvas.width = canvas.height = 1;
+    const context = canvas.getContext("2d", { willReadFrequently: true });
+    return [...new Set(getArray(colors).map(item => {
+        const value = String(item.value || "").trim();
+        if (!value || !CSS.supports("color", value)) return null;
+        context.clearRect(0, 0, 1, 1);
+        context.fillStyle = value;
+        context.fillRect(0, 0, 1, 1);
+        const [r, g, b] = context.getImageData(0, 0, 1, 1).data;
+        return `rgb(${r}, ${g}, ${b})`;
+    }).filter(Boolean))].join(", ");
+}
+
+$("#copyAllColors").addEventListener("click", async () => {
+    const status = $("#copyColorsStatus");
+    const text = colorsAsRGB(getObject(lastAnalysis?.design).colors);
+    if (!text) {
+        status.textContent = "No hay colores disponibles para copiar.";
+        return;
+    }
+    try {
+        await copyText(text);
+        status.textContent = "Colores copiados.";
+    } catch {
+        status.textContent = "No se pudo copiar. Inténtalo nuevamente.";
+    }
+});
 
 // ============================================================
 // TIPOGRAFIAS
@@ -389,101 +443,6 @@ function renderFontSizes(typography) {
             </div>
         `;
     }).join(""));
-}
-
-// ============================================================
-// BOTONES Y COMPONENTES
-// ============================================================
-
-function renderComponents(buttons) {
-    const items = getArray(buttons).slice(0, 30);
-
-    setText("#buttonCount", `${getArray(buttons).length} botones`);
-
-    if (!items.length) {
-        setHTML(
-            "#componentList",
-            emptyMessage("No se encontraron botones visibles.")
-        );
-        return;
-    }
-
-    setHTML("#componentList", items.map((button, index) => {
-        const bg = safeCSSColor(button.background);
-        const color = safeCSSColor(button.color);
-        const radius = safeCSSLength(button.borderRadius);
-        const fontSize = safeCSSLength(button.fontSize);
-        const padding = safeCSSLength(button.padding);
-        const border = safeCSSBorder(button.border);
-
-        const previewStyle = [
-            bg ? `background:${bg}` : "",
-            color ? `color:${color}` : "",
-            radius ? `border-radius:${radius}` : "",
-            fontSize ? `font-size:${fontSize}` : "",
-            padding ? `padding:${padding}` : "",
-            border ? `border:${border}` : ""
-        ].filter(Boolean).join(";");
-
-        return `
-            <article class="component-card">
-                <div class="component-preview">
-                    <button type="button" style="${previewStyle}">
-                        ${escapeHTML(button.text || "Botón")}
-                    </button>
-                </div>
-                <div class="component-name">
-                    ${escapeHTML(button.text || `Botón ${index + 1}`)}
-                </div>
-                <div class="component-meta">
-                    <span>Fondo: ${escapeHTML(button.background || "—")}</span>
-                    <span>Radio: ${escapeHTML(button.borderRadius || "—")}</span>
-                    <span>Texto: ${escapeHTML(button.color || "—")}</span>
-                </div>
-            </article>
-        `;
-    }).join(""));
-}
-
-function safeCSSColor(value) {
-    const color = String(value || "").trim();
-
-    if (
-        /^#[\da-f]{3,8}$/i.test(color) ||
-        /^rgba?\([\d\s.,%]+\)$/i.test(color) ||
-        /^hsla?\([\d\s.,%deg]+\)$/i.test(color) ||
-        /^(transparent|currentcolor)$/i.test(color)
-    ) {
-        return color;
-    }
-
-    return "";
-}
-
-function safeCSSLength(value) {
-    const text = String(value || "").trim();
-
-    if (
-        /^(?:0|(?:-?\d*\.?\d+)(?:px|em|rem|%|vh|vw|pt))$/i.test(text) ||
-        /^-?\d*\.?\d+(?:px|em|rem|%|vh|vw|pt)\s+-?\d*\.?\d+(?:px|em|rem|%|vh|vw|pt)(?:\s+-?\d*\.?\d+(?:px|em|rem|%|vh|vw|pt)){0,2}$/i.test(text)
-    ) {
-        return text;
-    }
-
-    return "";
-}
-
-function safeCSSBorder(value) {
-    const text = String(value || "").trim();
-
-    if (
-        text.length <= 100 &&
-        /^(?:none|0|(?:\d*\.?\d+px)\s+(?:none|solid|dashed|dotted|double)\s+(?:#[\da-f]{3,8}|rgba?\([\d\s.,%]+\)|[a-z]+))$/i.test(text)
-    ) {
-        return text;
-    }
-
-    return "";
 }
 
 // ============================================================
