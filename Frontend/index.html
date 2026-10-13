@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#111215">
+    <meta name="theme-color" content="#eae8e2">
     <title>WebScraping — Website Analyzer</title>
     <link rel="stylesheet" href="style.css">
     <script src="app.js" defer></script>
@@ -237,6 +237,12 @@
                         <div id="colorPalette" class="color-palette">
                             <p class="muted">Los colores aparecerán aquí.</p>
                         </div>
+                        <div class="design-actions">
+                            <button id="copyAllColors" class="button button-secondary button-small" type="button" disabled>
+                                Copiar todos los colores
+                            </button>
+                            <span id="copyColorsStatus" class="muted" role="status" aria-live="polite"></span>
+                        </div>
                     </article>
 
                     <div class="two-column-grid">
@@ -264,23 +270,13 @@
                     <article class="panel">
                         <div class="panel-heading">
                             <div>
-                                <h3>Botones y controles</h3>
-                                <p>Estilos calculados de los componentes detectados.</p>
-                            </div>
-                            <span id="buttonCount" class="count-badge">0 botones</span>
-                        </div>
-                        <div id="componentList" class="component-grid"></div>
-                    </article>
-
-                    <article class="panel">
-                        <div class="panel-heading">
-                            <div>
                                 <h3>Variables CSS</h3>
                                 <p>Variables personalizadas accesibles.</p>
                             </div>
                         </div>
                         <div id="cssVariables" class="code-list"></div>
                     </article>
+
                 </section>
 
                 <section id="structure" class="section-block">
