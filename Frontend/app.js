@@ -283,6 +283,7 @@ function renderDashboard(data) {
         seo.imagesWithoutAlt
     );
 
+    renderTechnologies(data.technologies);
     renderSEO(seo);
     renderOpenGraph(seo.openGraph);
     renderResponsive(data.responsive);
@@ -725,3 +726,21 @@ document.querySelectorAll(".nav-item").forEach((link) => {
 });
 
 checkAPI();
+
+// Señales públicas detectadas por la API; todos los valores se escapan.
+function renderTechnologies(technologies) {
+    const data = getObject(technologies);
+    const items = getArray(data.items);
+    setText("#technologyCount", items.length + " tecnologías");
+    setText("#technologyNotice", data.notice || "Detección orientativa: algunas tecnologías pueden no dejar señales públicas.");
+    setHTML("#technologyList", items.length ? items.map(item => `
+        <article class="technology-card">
+            <div class="technology-heading">
+                <h3>${escapeHTML(item.name)}</h3>
+                <span class="tag">Confianza ${item.confidence === "alta" ? "alta" : "media"}</span>
+            </div>
+            <p class="muted">${escapeHTML(item.category)}</p>
+            <ul>${getArray(item.evidence).map(evidence => `<li>${escapeHTML(evidence)}</li>`).join("")}</ul>
+        </article>
+    `).join("") : emptyMessage("No se encontraron señales de tecnologías conocidas. Esto no significa que la web no utilice frameworks o servicios externos."));
+}

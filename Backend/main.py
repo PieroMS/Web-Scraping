@@ -9,6 +9,11 @@ from datetime import datetime, timezone
 from urllib.parse import urlparse
 
 from bs4 import BeautifulSoup
+
+if __package__:
+    from .technologies import detect_technologies
+else:
+    from technologies import detect_technologies
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, HttpUrl
@@ -458,6 +463,14 @@ async def analyze(request: AnalyzeRequest):
 
             page = await context.new_page()
 
+            resource_urls = set()
+
+            def track_resource(request):
+                if request.resource_type in {"script", "stylesheet", "xhr", "fetch", "document"} and len(resource_urls) < 2000:
+                    resource_urls.add(request.url)
+
+            page.on("request", track_resource)
+
             try:
                 response = await page.goto(
                     url,
@@ -479,6 +492,12 @@ async def analyze(request: AnalyzeRequest):
                 final_url = page.url
 
                 page_data = await inspect_page(page)
+                technologies = detect_technologies(
+                    await page.content(),
+                    await response.all_headers() if response else {},
+                    list(resource_urls),
+                )
+                page.remove_listener("request", track_resource)
 
                 responsive = await inspect_responsive(
                     page,
@@ -575,6 +594,7 @@ async def analyze(request: AnalyzeRequest):
                 page_data["elements"]["imagesWithoutAlt"],
         },
 
+        "technologies": technologies,
         "responsive": responsive,
 
         "notes": [
